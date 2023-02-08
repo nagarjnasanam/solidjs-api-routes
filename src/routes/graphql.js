@@ -1,32 +1,45 @@
-// import { buildSchema, graphql } from "graphql";
+import { buildSchema, graphql } from "graphql";
 import { json } from "solid-start";
 import { APIEvent } from "solid-start";
-
-const graphql = (schema,resolvers)=>
-(event)=>{return new Response("GraphQl Response")}
-
  
 // Define GraphQL Schema
-
-
-
-const schema = `
-
-
-type Message{
-    message String
-}
-type Query{
-    hello:Message
-}
-`
+const schema = buildSchema(`
+  type Message {
+      message: String
+  }
  
+  type Query {
+    hello(input:String): Message
+    goodbye: String
+  }
+`);
+ 
+// Define GraphQL Resolvers
+const rootValue = {
+    hello: (...args) => {
+        console.log(args)
+        return {
+            message: "Hellooooooooooooooo World"
+          }
+  },
+  goodbye: () => {
+      return "Goodbye"
+  }
+};
+ 
+// request handler
+const handler = async (event) => {  
+ 
+  // get request body
+  const body = await new Response(event.request.body).json()
 
-const handler = graphql(schema,{
-    Query:{
-        hello:()=>{msg:"Hello world"}
-    }
-})
+ 
+  // pass query and save results
+  const result = await graphql({rootValue, schema, source: body.query})
+ 
+  // send query results as response
+  return json(result);
+};
  
 export const GET = handler;
  
